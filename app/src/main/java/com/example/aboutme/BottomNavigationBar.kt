@@ -147,6 +147,7 @@ fun AppBottomNavigation(
                 selectedContentColor = BurntOrange,
                 unselectedContentColor = SoftCream.copy(alpha = 0.7f),
                 onClick = {
+                    // Burada "profile" route'unu kullanıyoruz - bu sayfamız EnhancedProfileScreen composable'ına yönlendirilecek
                     navController.navigate("profile") {
                         popUpTo("login_screen") {
                             saveState = true

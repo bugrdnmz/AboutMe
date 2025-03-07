@@ -34,3 +34,15 @@ class SessionManager(private val context: Context) {
 
 // Composition Local for session manager access across composables
 val LocalSessionManager = compositionLocalOf<SessionManager> { error("SessionManager not provided") }
+
+// HabitTrackerDao ile entegrasyon için interface
+interface SessionManagerDao {
+    suspend fun getUserById(userId: String): User?
+}
+
+// Room veritabanı için SessionManagerDao implementasyonu örneği
+class SessionManagerDaoImpl(private val userDao: UserDao) : SessionManagerDao {
+    override suspend fun getUserById(userId: String): User? {
+        return userDao.getUserById(userId)
+    }
+}
