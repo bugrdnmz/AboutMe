@@ -3,46 +3,50 @@ package com.example.aboutme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
-import android.widget.Toast
 
-@OptIn(ExperimentalMaterial3Api::class)
+// Toprak Tonları Paleti
+object EarthColors {
+    val Bronze = Color(0xFFA6763C)         // Bronz
+    val Sand = Color(0xFFD9CEC5)           // Kum rengi
+    val Terracotta = Color(0xFFD97941)     // Kiremit rengi
+    val DarkBrown = Color(0xFF73392C)      // Koyu kahverengi
+    val Rust = Color(0xFFA65341)           // Pas kırmızısı
+    val LightSand = Color(0xFFF5F0EB)      // Açık kum rengi
+    val TextDark = Color(0xFF3E1F18)       // Koyu metin
+    val TextLight = Color(0xFF73473C)      // Açık metin
+}
+
 @Composable
-fun LoginScreen(navController: NavController, userDao: UserDao) {
-    val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
-
+fun LoginScreen(navController: NavController, userDao: UserDao, sessionManager: SessionManager) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        EarthColors.Sand,
+                        EarthColors.LightSand
+                    )
+                )
+            )
     ) {
         Column(
             modifier = Modifier
@@ -51,166 +55,136 @@ fun LoginScreen(navController: NavController, userDao: UserDao) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo or App Name
+            // Title
             Text(
-                text = "Hoş Geldiniz",
-                fontSize = 30.sp,
+                text = "Not Uygulaması",
+                fontSize = 36.sp,
+                color = EarthColors.DarkBrown,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFFB8C00),
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            Text(
+                text = "Giriş",
+                fontSize = 24.sp,
+                color = EarthColors.Rust,
+                fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-            // Main Card
+            // Login Card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                ),
                 shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(all = 24.dp),
+                        .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = "Giriş Yap",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFFFB8C00),
-                        modifier = Modifier.padding(bottom = 24.dp)
-                    )
-
-                    // Kullanıcı Adı Field
+                    // Username Field
                     OutlinedTextField(
                         value = username,
                         onValueChange = { username = it },
-                        label = { Text("Kullanıcı Adı") },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Kullanıcı Adı"
-                            )
-                        },
+                        label = { Text("Kullanıcı Adı", color = EarthColors.TextLight) },
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Next
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = EarthColors.Terracotta,
+                            unfocusedBorderColor = EarthColors.Bronze.copy(alpha = 0.6f),
+                            focusedTextColor = EarthColors.TextDark,
+                            unfocusedTextColor = EarthColors.TextDark.copy(alpha = 0.8f),
+                            cursorColor = EarthColors.Terracotta
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp)
+                            .padding(vertical = 8.dp)
                     )
 
-                    // Şifre Field
+                    // Password Field
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text("Şifre") },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = "Şifre"
-                            )
-                        },
-                        trailingIcon = {
-                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(
-                                    imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = if (passwordVisible) "Şifreyi Gizle" else "Şifreyi Göster"
-                                )
-                            }
-                        },
+                        label = { Text("Şifre", color = EarthColors.TextLight) },
                         singleLine = true,
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password,
-                            imeAction = ImeAction.Done
+                        visualTransformation = PasswordVisualTransformation(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = EarthColors.Terracotta,
+                            unfocusedBorderColor = EarthColors.Bronze.copy(alpha = 0.6f),
+                            focusedTextColor = EarthColors.TextDark,
+                            unfocusedTextColor = EarthColors.TextDark.copy(alpha = 0.8f),
+                            cursorColor = EarthColors.Terracotta
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 24.dp)
+                            .padding(vertical = 8.dp)
                     )
 
-                    // Hata Mesajı
+                    // Error Message
                     if (errorMessage.isNotEmpty()) {
                         Text(
                             text = errorMessage,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(bottom = 16.dp),
-                            textAlign = TextAlign.Center
+                            color = EarthColors.Rust,
+                            modifier = Modifier.padding(vertical = 8.dp)
                         )
                     }
 
-                    // Giriş Butonu
+                    // Login Button
+                    Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = {
-                            // Giriş bilgilerini doğrula
-                            if (username.isBlank() || password.isBlank()) {
-                                errorMessage = "Lütfen kullanıcı adı ve şifre alanlarını doldurun"
-                                return@Button
-                            }
+                            if (username.isNotEmpty() && password.isNotEmpty()) {
+                                coroutineScope.launch {
+                                    val user = userDao.getUserByUsername(username)
+                                    if (user != null && user.password == password) {
+                                        // Save user session
+                                        sessionManager.saveUserSession(user.id.toString(), user.username)
 
-                            isLoading = true
-                            errorMessage = ""
-
-                            coroutineScope.launch {
-                                try {
-                                    // Kullanıcı adı ve şifreyi doğrula
-                                    val userId = userDao.validateUser(username, password)
-
-                                    if (userId != null) {
-                                        // Giriş başarılı - "todo_list_screen" yerine "notes" kullanılacak
-                                        navController.navigate("notes") {
+                                        // Navigate to main page
+                                        navController.navigate("dailyNotes") {
                                             popUpTo("login_screen") { inclusive = true }
                                         }
                                     } else {
-                                        // Kullanıcı bulunamadı veya şifre yanlış
-                                        errorMessage = "Kullanıcı adı veya şifre hatalı"
-                                        Toast.makeText(context, "Giriş başarısız", Toast.LENGTH_SHORT).show()
+                                        errorMessage = "Geçersiz kullanıcı adı veya şifre"
                                     }
-                                } catch (e: Exception) {
-                                    // Hata durumunda bilgilendir
-                                    errorMessage = "Giriş sırasında bir hata oluştu: ${e.localizedMessage}"
-                                    Toast.makeText(context, "Bir hata oluştu", Toast.LENGTH_SHORT).show()
-                                } finally {
-                                    isLoading = false
                                 }
+                            } else {
+                                errorMessage = "Kullanıcı adı ve şifre gereklidir"
                             }
                         },
+                        colors = ButtonDefaults.buttonColors(containerColor = EarthColors.Terracotta),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
-                        enabled = !isLoading,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFFB8C00)
-                        )
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = Color.White
-                            )
-                        } else {
-                            Text("Giriş Yap")
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Kayıt Linki
-                    TextButton(
-                        onClick = {
-                            navController.navigate("register")
-                        }
-                    ) {
-                        Text(
-                            text = "Hesabın yok mu? Kaydol",
-                            color = Color(0xFFFB8C00)
-                        )
+                        Text("Giriş Yap", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Medium)
                     }
                 }
+            }
+
+            // Register Button
+            Spacer(modifier = Modifier.height(24.dp))
+            OutlinedButton(
+                onClick = { navController.navigate("register") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .height(50.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = EarthColors.DarkBrown
+                ),
+                border = ButtonDefaults.outlinedButtonBorder.copy(
+                    brush = SolidColor(EarthColors.Bronze)
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Hesap Oluştur", fontSize = 16.sp, fontWeight = FontWeight.Medium)
             }
         }
     }
